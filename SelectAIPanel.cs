@@ -1,10 +1,13 @@
-﻿using ColossalFramework.UI;
+﻿using System;
+using System.Reflection;
+using ColossalFramework.UI;
 using UnityEngine;
 
 namespace BuildingAIChanger
 {
     class SelectAIPanel : UIPanel
     {
+        private const String ColossalAssemblyInfo = ", Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null";
         private UILabel m_label;
         private UITextField m_input;
 
@@ -21,6 +24,12 @@ namespace BuildingAIChanger
             AddInput();
 
             PerformLayout();
+        }
+
+        public String value
+        {
+            get { return m_input.text; }
+            set { m_input.text = value; }
         }
 
         private void AddLabel()
@@ -49,16 +58,77 @@ namespace BuildingAIChanger
             m_input.disabledTextColor = new Color32(254, 254, 254, 255);
             m_input.color = new Color32(58, 88, 104, 255);
             m_input.disabledColor = new Color32(254, 254, 254, 255);
+
+            m_input.eventTextSubmitted += OnTextChanged;
+        }
+
+        private void OnTextChanged(UIComponent component, string value)
+        {
+            Verify();
         }
 
         public override void PerformLayout()
         {
-            m_label.position = new Vector3(0, 0);
+            if (m_label != null && m_input != null)
+            {
+                m_label.position = new Vector3(0, 0);
 
-            m_input.position = new Vector3(0, -.01f);
-            m_input.transform.Translate(.18f, 0, 0);
-            m_input.width = width * 0.67f;
+                m_input.position = new Vector3(0, 0);
+                m_input.transform.Translate(.2f, -.01f, 0);
+                m_input.width = width * 0.67f;
+            }
             base.PerformLayout();
+        }
+
+        public void Verify()
+        {
+            if (IsValueValid())
+            {
+                m_input.textColor = new Color32(0, 255, 0, 255);
+            }
+            else
+            {
+                m_input.textColor = new Color32(255, 0, 0, 255);
+            }
+        }
+
+        /**
+         * Check if the current Value is the Name of an existing AI class
+         */
+        public bool IsValueValid()
+        {
+            Type type;
+            try
+            {
+                // Search in colossal assembly first
+                try
+                {
+                    type = Type.GetType(value + ColossalAssemblyInfo, true);
+
+                    return type.IsSubclassOf(typeof (PrefabAI));
+                }
+                catch (TypeLoadException)
+                {
+                    // If not found, look in all loaded Assemblies
+                    foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+                    {
+                        try
+                        {
+                            type = a.GetType(value, true);
+
+                            // on success
+                            return type.IsSubclassOf(typeof (PrefabAI));
+                        }
+                        catch (TypeLoadException) { }
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+
+            return false;
         }
     }
 }
