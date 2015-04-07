@@ -7,6 +7,8 @@ namespace BuildingAIChanger
 {
     class SelectAIPanel : UIPanel
     {
+        public event PropertyChangedEventHandler<string> eventValueChanged;
+
         private const String ColossalAssemblyInfo = ", Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null";
         private UILabel m_label;
         private UITextField m_input;
@@ -65,6 +67,9 @@ namespace BuildingAIChanger
         private void OnTextChanged(UIComponent component, string value)
         {
             Verify();
+
+            if (eventValueChanged != null)
+                eventValueChanged(component, value);
         }
 
         public override void PerformLayout()
@@ -97,6 +102,21 @@ namespace BuildingAIChanger
          */
         public bool IsValueValid()
         {
+            var type = TryGetAIType();
+            try
+            {
+                type.Equals(null);
+            }
+            catch (NullReferenceException)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        public Type TryGetAIType()
+        {
             Type type;
             try
             {
@@ -105,7 +125,7 @@ namespace BuildingAIChanger
                 {
                     type = Type.GetType(value + ColossalAssemblyInfo, true);
 
-                    return type.IsSubclassOf(typeof (PrefabAI));
+                    return (type.IsSubclassOf(typeof(PrefabAI))) ? type : null;
                 }
                 catch (TypeLoadException)
                 {
@@ -117,7 +137,7 @@ namespace BuildingAIChanger
                             type = a.GetType(value, true);
 
                             // on success
-                            return type.IsSubclassOf(typeof (PrefabAI));
+                            return (type.IsSubclassOf(typeof(PrefabAI))) ? type : null;
                         }
                         catch (TypeLoadException) { }
                     }
@@ -125,10 +145,10 @@ namespace BuildingAIChanger
             }
             catch
             {
-                return false;
+                return null;
             }
 
-            return false;
+            return null;
         }
     }
 }
