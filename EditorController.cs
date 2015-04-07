@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ColossalFramework.UI;
@@ -42,24 +41,30 @@ namespace BuildingAIChanger
 
         private void OnAIFieldChanged(UIComponent component, string value)
         {
-            var prefabInfo = m_toolController.m_editPrefabInfo;
+            var buildingInfo = (BuildingInfo) m_toolController.m_editPrefabInfo;
             if (m_selectAIPanel.IsValueValid())
             {
-                DestroyImmediate(prefabInfo.gameObject.GetComponent<PrefabAI>());
-                var type = m_selectAIPanel.TryGetAIType();
-                prefabInfo.gameObject.AddComponent(type);
+                // remove old ai
+                var oldAI = buildingInfo.gameObject.GetComponent<PrefabAI>();
+                DestroyImmediate(oldAI);
 
-                m_toolController.GetType()
-                    .InvokeMember("eventEditPrefabChanged", BindingFlags.InvokeMethod | BindingFlags.NonPublic, null,
-                        m_toolController, new object[] {prefabInfo});
-                
+                // add new ai
+                var type = m_selectAIPanel.TryGetAIType();
+                buildingInfo.gameObject.AddComponent(type);
+
+                buildingInfo.DestroyPrefabInstance();
+                buildingInfo.InitializePrefabInstance();
+                RefreshPropertiesPanel(buildingInfo);
                 RefreshUIPosition();
             }
+        }
 
-            var components = prefabInfo.GetComponents<Component>();
-            String compList = "";
-            components.ForEach((c) => compList += c.GetType().FullName + " ");
-            Debug.Log(compList);
+        private void RefreshPropertiesPanel(BuildingInfo prefabInfo)
+        {
+            var decorationPropertiesPanel = m_propPanel.GetComponent<DecorationPropertiesPanel>();
+            decorationPropertiesPanel.GetType()
+                .InvokeMember("Refresh", BindingFlags.InvokeMethod | BindingFlags.NonPublic, null,
+                    decorationPropertiesPanel, new object[] {prefabInfo});
         }
 
         private void RefreshUIPosition()
