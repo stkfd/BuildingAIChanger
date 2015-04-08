@@ -66,8 +66,7 @@ namespace BuildingAIChanger
 
                 TryCopyAttributes(oldAI, newAI);
 
-                buildingInfo.DestroyPrefabInstance();
-                buildingInfo.InitializePrefabInstance();
+                buildingInfo.TempInitializePrefab();
                 RefreshPropertiesPanel(buildingInfo);
             }
         }
