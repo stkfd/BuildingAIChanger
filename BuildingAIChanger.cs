@@ -15,7 +15,6 @@
  * License along with this library.
  */
 
-using ColossalFramework.UI;
 using ICities;
 
 namespace BuildingAIChanger

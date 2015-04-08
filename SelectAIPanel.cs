@@ -16,20 +16,27 @@
  */
 
 using System;
-using System.Reflection;
 using ColossalFramework.UI;
 using UnityEngine;
 
 namespace BuildingAIChanger
 {
-    class SelectAIPanel : UIPanel
+    internal class SelectAIPanel : UIPanel
     {
+        private const String ColossalAssemblyInfo =
+            ", Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null";
+
+        private UITextField m_input;
+        private UILabel m_label;
+
+        public String value
+        {
+            get { return m_input.text; }
+            set { m_input.text = value; }
+        }
+
         public event PropertyChangedEventHandler<string> eventValueChanged;
 
-        private const String ColossalAssemblyInfo = ", Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null";
-        private UILabel m_label;
-        private UITextField m_input;
-        
         public override void Start()
         {
             base.Start();
@@ -47,12 +54,6 @@ namespace BuildingAIChanger
             AddInput();
 
             PerformLayout();
-        }
-
-        public String value
-        {
-            get { return m_input.text; }
-            set { m_input.text = value; }
         }
 
         private void AddLabel()
@@ -101,7 +102,7 @@ namespace BuildingAIChanger
 
                 m_input.position = new Vector3(0, 0);
                 m_input.transform.Translate(.2f, -.01f, 0);
-                m_input.width = width * 0.67f;
+                m_input.width = width*0.67f;
             }
             base.PerformLayout();
         }
@@ -109,6 +110,7 @@ namespace BuildingAIChanger
         /**
          * Color the text green or red depending on its validity
          */
+
         public void Verify()
         {
             if (IsValueValid())
@@ -124,6 +126,7 @@ namespace BuildingAIChanger
         /**
          * Check if the current Value is the Name of an existing AI class
          */
+
         public bool IsValueValid()
         {
             var type = TryGetAIType();
@@ -149,7 +152,7 @@ namespace BuildingAIChanger
                 {
                     type = Type.GetType(value + ColossalAssemblyInfo, true);
 
-                    return (type.IsSubclassOf(typeof(PrefabAI))) ? type : null;
+                    return (type.IsSubclassOf(typeof (PrefabAI))) ? type : null;
                 }
                 catch (TypeLoadException)
                 {
@@ -161,9 +164,11 @@ namespace BuildingAIChanger
                             type = a.GetType(value, true);
 
                             // on success
-                            return (type.IsSubclassOf(typeof(PrefabAI))) ? type : null;
+                            return (type.IsSubclassOf(typeof (PrefabAI))) ? type : null;
                         }
-                        catch (TypeLoadException) { }
+                        catch (TypeLoadException)
+                        {
+                        }
                     }
                 }
             }

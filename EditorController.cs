@@ -17,21 +17,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using ColossalFramework.UI;
-using ICities;
 using UnityEngine;
 
 namespace BuildingAIChanger
 {
     public class EditorController : MonoBehaviour
     {
-        private UIView m_view;
+        private UIPanel m_propPanel;
         private SelectAIPanel m_selectAIPanel;
         private ToolController m_toolController;
-        private UIPanel m_propPanel;
         private UIComponent m_uiContainer;
+        private UIView m_view;
 
         public void Start()
         {
@@ -77,6 +75,7 @@ namespace BuildingAIChanger
         /**
          * Copies all attributes that share the same name and type from one AI object to another
          */
+
         private void TryCopyAttributes(PrefabAI oldAI, PrefabAI newAI)
         {
             var oldAIFields =
@@ -88,12 +87,12 @@ namespace BuildingAIChanger
                            BindingFlags.FlattenHierarchy);
 
             var newAIFieldDic = new Dictionary<String, FieldInfo>(newAIFields.Length);
-            foreach (FieldInfo field in newAIFields)
+            foreach (var field in newAIFields)
             {
                 newAIFieldDic.Add(field.Name, field);
             }
 
-            foreach (FieldInfo fieldInfo in oldAIFields)
+            foreach (var fieldInfo in oldAIFields)
             {
                 if (fieldInfo.IsDefined(typeof (CustomizablePropertyAttribute), true))
                 {
@@ -107,7 +106,9 @@ namespace BuildingAIChanger
                             newAIField.SetValue(newAI, fieldInfo.GetValue(oldAI));
                         }
                     }
-                    catch (NullReferenceException) {}
+                    catch (NullReferenceException)
+                    {
+                    }
                 }
             }
         }
