@@ -6,6 +6,9 @@ Currently, you do need to know the exact name of the AI class. If you enter a cl
 
 Existing properties on the current AI instance are carried over to the new AI as far as possible, but this part is still very much a work-in-progress. It's probably a good idea to select the proper AI as early as possible to avoid problems.
 
+## Using custom AI classes
+
+If you intend to use a custom Building AI, make sure to include the namespace of your mod. For example, use MySuperMod.SuperAI. This is not neccessary for the stock AIs as they all seem to be in the root namespace.
 
 ## Source code & Issues
 
