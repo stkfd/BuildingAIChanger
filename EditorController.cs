@@ -31,7 +31,9 @@ namespace BuildingAIChanger
 
         private void OnEditPrefabChanged(PrefabInfo info)
         {
-            m_selectAIPanel.value = info.GetAI().GetType().FullName;
+            var ai = info.GetAI();
+            if (ai != null)
+                m_selectAIPanel.value = ai.GetType().FullName;
         }
 
         private void OnAIFieldChanged(UIComponent component, string value)
