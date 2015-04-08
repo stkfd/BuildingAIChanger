@@ -71,10 +71,11 @@ namespace BuildingAIChanger
             }
         }
 
-        /**
-         * Copies all attributes that share the same name and type from one AI object to another
-         */
-
+        /// <summary>
+        /// Copies all attributes that share the same name and type from one AI object to another
+        /// </summary>
+        /// <param name="oldAI">Source AI instance</param>
+        /// <param name="newAI">Destination AI instance</param>
         private void TryCopyAttributes(PrefabAI oldAI, PrefabAI newAI)
         {
             var oldAIFields =
@@ -112,6 +113,10 @@ namespace BuildingAIChanger
             }
         }
 
+        /// <summary>
+        /// Reload the property editor panel so the fields of a new AI class appear
+        /// </summary>
+        /// <param name="prefabInfo">new PrefabInfo</param>
         private void RefreshPropertiesPanel(BuildingInfo prefabInfo)
         {
             var decorationPropertiesPanel = m_propPanel.GetComponent<DecorationPropertiesPanel>();

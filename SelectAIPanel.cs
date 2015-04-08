@@ -23,6 +23,9 @@ namespace BuildingAIChanger
 {
     internal class SelectAIPanel : UIPanel
     {
+        /// <summary>
+        /// Suffix used to build assembly qualified names for the stock AI classes
+        /// </summary>
         private const String ColossalAssemblyInfo =
             ", Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null";
 
@@ -107,10 +110,9 @@ namespace BuildingAIChanger
             base.PerformLayout();
         }
 
-        /**
-         * Color the text green or red depending on its validity
-         */
-
+        /// <summary>
+        /// Color the text green or red depending on its validity
+        /// </summary>
         public void Verify()
         {
             if (IsValueValid())
@@ -123,10 +125,10 @@ namespace BuildingAIChanger
             }
         }
 
-        /**
-         * Check if the current Value is the Name of an existing AI class
-         */
-
+        /// <summary>
+        /// Check if the current Value is the Name of an existing AI class
+        /// </summary>
+        /// <returns></returns>
         public bool IsValueValid()
         {
             var type = TryGetAIType();
@@ -142,6 +144,11 @@ namespace BuildingAIChanger
             return true;
         }
 
+        /// <summary>
+        /// Tries to find the AI type for the current field value. Lookup first searches the Colossal Assembly,
+        /// then if no class is found all other loaded assemblies are searched.
+        /// </summary>
+        /// <returns>Type of the AI class or null if none can be found or the found type is not a subclass of PrefabAI</returns>
         public Type TryGetAIType()
         {
             Type type;
@@ -180,6 +187,9 @@ namespace BuildingAIChanger
             return null;
         }
 
+        /// <summary>
+        /// Instantiates this class and inserts the UI into the asset editor
+        /// </summary>
         public static void Insert()
         {
             var view = UIView.GetAView();

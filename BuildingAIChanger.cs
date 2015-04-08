@@ -19,6 +19,9 @@ using ICities;
 
 namespace BuildingAIChanger
 {
+    /// <summary>
+    /// Building AI Changer main mod class; provides Mod Info and handles loading
+    /// </summary>
     public class BuildingAIChanger : LoadingExtensionBase, IUserMod
     {
         private SelectAIPanel m_selectAI;
