@@ -5,7 +5,7 @@ namespace BuildingAIChanger
 {
     public class BuildingAIChanger : LoadingExtensionBase, IUserMod
     {
-        public EditorController controller;
+        private SelectAIPanel m_selectAI;
 
         public string Name
         {
@@ -21,7 +21,7 @@ namespace BuildingAIChanger
         {
             if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
             {
-                controller = EditorController.Create();
+                SelectAIPanel.Insert();
             }
         }
     }

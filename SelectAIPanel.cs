@@ -12,12 +12,16 @@ namespace BuildingAIChanger
         private const String ColossalAssemblyInfo = ", Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null";
         private UILabel m_label;
         private UITextField m_input;
-
+        
         public override void Start()
         {
             base.Start();
+
+            gameObject.AddComponent<EditorController>();
+
             backgroundSprite = "GenericPanel";
             color = new Color32(150, 150, 150, 255);
+            transform.localPosition = new Vector3(0, .08f, 0);
 
             width = 383;
             height = 38;
@@ -85,6 +89,9 @@ namespace BuildingAIChanger
             base.PerformLayout();
         }
 
+        /**
+         * Color the text green or red depending on its validity
+         */
         public void Verify()
         {
             if (IsValueValid())
@@ -149,6 +156,14 @@ namespace BuildingAIChanger
             }
 
             return null;
+        }
+
+        public static void Insert()
+        {
+            var view = UIView.GetAView();
+            var uiContainer = view.FindUIComponent("FullScreenContainer");
+            var propPanel = uiContainer.Find<UIPanel>("DecorationProperties");
+            propPanel.AddUIComponent<SelectAIPanel>();
         }
     }
 }
