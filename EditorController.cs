@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using ColossalFramework.UI;
@@ -50,12 +51,49 @@ namespace BuildingAIChanger
 
                 // add new ai
                 var type = m_selectAIPanel.TryGetAIType();
-                buildingInfo.gameObject.AddComponent(type);
+                var newAI = (PrefabAI) buildingInfo.gameObject.AddComponent(type);
+
+                TryCopyAttributes(oldAI, newAI);
 
                 buildingInfo.DestroyPrefabInstance();
                 buildingInfo.InitializePrefabInstance();
                 RefreshPropertiesPanel(buildingInfo);
                 RefreshUIPosition();
+            }
+        }
+
+        private void TryCopyAttributes(PrefabAI oldAI, PrefabAI newAI)
+        {
+            var oldAIFields =
+                oldAI.GetType()
+                    .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                               BindingFlags.FlattenHierarchy);
+            var newAIFields = newAI.GetType()
+                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                           BindingFlags.FlattenHierarchy);
+
+            var newAIFieldDic = new Dictionary<String, FieldInfo>(newAIFields.Length);
+            foreach (FieldInfo field in newAIFields)
+            {
+                newAIFieldDic.Add(field.Name, field);
+            }
+
+            foreach (FieldInfo fieldInfo in oldAIFields)
+            {
+                if (fieldInfo.IsDefined(typeof (CustomizablePropertyAttribute), true))
+                {
+                    FieldInfo newAIField;
+                    newAIFieldDic.TryGetValue(fieldInfo.Name, out newAIField);
+
+                    try
+                    {
+                        if (newAIField.GetType().Equals(fieldInfo.GetType()))
+                        {
+                            newAIField.SetValue(newAI, fieldInfo.GetValue(oldAI));
+                        }
+                    }
+                    catch (NullReferenceException) {}
+                }
             }
         }
 
