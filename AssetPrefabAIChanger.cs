@@ -33,7 +33,7 @@ using UnityEngine;
 namespace AssetPrefabAIChanger
 {
 	/// <summary>
-	/// Building AI Changer main mod class; provides Mod Info and handles loading
+	/// Prefab AI Changer main mod class; provides Mod Info and handles loading
 	/// </summary>
 	public class PrefabAIChanger : LoadingExtensionBase, IUserMod
 	{
@@ -54,7 +54,7 @@ namespace AssetPrefabAIChanger
 		}
 	}
 	/// <summary>
-	/// Building AI Changer main mod class; provides Mod Info and handles loading
+	/// Prefab AI Changer panel class; does the actual work.
 	/// </summary>
 	public class SelectAIPanel : UIPanel
 	{
