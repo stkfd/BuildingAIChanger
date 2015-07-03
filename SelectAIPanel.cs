@@ -1,6 +1,8 @@
 ﻿/* BuildingAIChanger
  * Copyright (c) 2015 Stefan Kaufhold, All rights reserved.
  * 
+ * Additional changes µ 2015-06 D Lue Choy
+ * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -8,8 +10,8 @@
  * 
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+ * See the GNU Lesser General Public License for more details.
  * 
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
@@ -46,32 +48,38 @@ namespace BuildingAIChanger
 
             gameObject.AddComponent<EditorController>();
 
-            backgroundSprite = "GenericPanel";
+            backgroundSprite = "SubcategoriesPanel";
             color = new Color32(150, 150, 150, 255);
             transform.localPosition = new Vector3(0, .08f, 0);
 
-            width = 383;
-            height = 38;
+            width = 393;
+            height = 25;
 
             AddLabel();
             AddInput();
 
-            PerformLayout();
+//            PerformLayout();
         }
 
         private void AddLabel()
         {
             m_label = AddUIComponent<UILabel>();
-            m_label.text = "Building AI";
-            m_label.padding = new RectOffset(10, 0, 12, 0);
+            m_label.text = "Prefab AI";
+            m_label.tooltip = "Prefab AI determines what properties and behaviours a given asset/building/vehicle will have.";
+            m_label.textColor = new Color32(125,185,255, 255);
+            m_label.disabledTextColor = new Color32(255, 255, 255, 255);
+            m_label.width = 181;
+            m_label.height = 18;
+            m_label.position = new Vector3(0.0f,-4.0f);
         }
 
         private void AddInput()
         {
             m_input = AddUIComponent<UITextField>();
 
-            m_input.padding = new RectOffset(10, 10, 6, 6);
-            m_input.height = 26;
+            m_input.width = 191;
+            m_input.height = 20;
+            m_input.position = new Vector3(190.0f, 0.0f);
 
             m_input.builtinKeyNavigation = true;
             m_input.isInteractive = true;
@@ -81,10 +89,15 @@ namespace BuildingAIChanger
             m_input.selectionSprite = "EmptySprite";
             m_input.selectionBackgroundColor = new Color32(0, 171, 234, 255);
             m_input.normalBgSprite = "TextFieldPanel";
-            m_input.textColor = new Color32(174, 197, 211, 255);
+            m_input.textColor = new Color32(12, 21, 22, 255);
             m_input.disabledTextColor = new Color32(254, 254, 254, 255);
-            m_input.color = new Color32(58, 88, 104, 255);
+            m_input.outlineColor = new Color32(255, 255, 255, 64);
+            m_input.useOutline = true;
+            m_input.color = new Color32(255, 255, 255, 255);
             m_input.disabledColor = new Color32(254, 254, 254, 255);
+            m_input.bottomColor = new Color32(255, 255, 255, 255);
+            m_input.verticalAlignment = UIVerticalAlignment.Middle;
+            m_input.horizontalAlignment = UIHorizontalAlignment.Center;
 
             m_input.eventTextSubmitted += OnTextChanged;
         }
@@ -97,6 +110,7 @@ namespace BuildingAIChanger
                 eventValueChanged(component, value);
         }
 
+/*
         public override void PerformLayout()
         {
             if (m_label != null && m_input != null)
@@ -109,19 +123,20 @@ namespace BuildingAIChanger
             }
             base.PerformLayout();
         }
+*/
 
         /// <summary>
-        /// Color the text green or red depending on its validity
+        /// Color the text field red or white depending on its validity. As would be consistent with other decoration/asset property text fields.
         /// </summary>
         public void Verify()
         {
             if (IsValueValid())
             {
-                m_input.textColor = new Color32(0, 255, 0, 255);
+                m_input.color = Color.white;
             }
             else
             {
-                m_input.textColor = new Color32(255, 0, 0, 255);
+                m_input.color = Color.red;
             }
         }
 
@@ -195,7 +210,8 @@ namespace BuildingAIChanger
             var view = UIView.GetAView();
             var uiContainer = view.FindUIComponent("FullScreenContainer");
             var propPanel = uiContainer.Find<UIPanel>("DecorationProperties");
-            propPanel.AddUIComponent<SelectAIPanel>();
+            var propPanelPanel = propPanel.Find<UIScrollablePanel>("Container");
+            propPanelPanel.AddUIComponent<SelectAIPanel>();
         }
     }
 }

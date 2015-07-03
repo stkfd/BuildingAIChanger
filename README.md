@@ -1,6 +1,6 @@
 # BuildingAIChanger
 
-This mod adds a field next to the Asset Property editor that lets you choose any building AI for the building you're editing.
+This mod adds a field to the Asset Property editor that lets you choose any building AI for the building you're editing.
 
 The main intended use of this mod is to ease the creation of buildings with custom AI classes. Currently, you do need to know the exact name of the AI class, there is no auto-complete or anything like that. If you enter a class that doesn't exist or isn't a PrefabAI, you won't do any harm.
 
