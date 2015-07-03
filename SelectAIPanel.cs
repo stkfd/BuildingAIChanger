@@ -78,7 +78,7 @@ namespace BuildingAIChanger
             m_input = AddUIComponent<UITextField>();
 
             m_input.width = 191;
-            m_input.height = 20;
+            m_input.height = 22;
             m_input.position = new Vector3(190.0f, 0.0f);
 
             m_input.builtinKeyNavigation = true;
@@ -91,8 +91,7 @@ namespace BuildingAIChanger
             m_input.normalBgSprite = "TextFieldPanel";
             m_input.textColor = new Color32(12, 21, 22, 255);
             m_input.disabledTextColor = new Color32(254, 254, 254, 255);
-            m_input.outlineColor = new Color32(255, 255, 255, 64);
-            m_input.useOutline = true;
+            m_input.padding = new RectOffset(4, 0, 3, 0);
             m_input.color = new Color32(255, 255, 255, 255);
             m_input.disabledColor = new Color32(254, 254, 254, 255);
             m_input.bottomColor = new Color32(255, 255, 255, 255);
