@@ -1,5 +1,8 @@
 # Asset Prefab(+Building) AI Changer
 
+###### a derivative of Cerebellum's "BuildingAIChanger"
+
+
 This mod adds a drop down list to the Asset Property editor that lets you choose any AI for the asset you are editing.
 
 >**Warning** - `WorksAsBuilding()` and `WorksAsNet()` checks are not implemented.
@@ -8,10 +11,10 @@ This mod adds a drop down list to the Asset Property editor that lets you choose
 
 >Broken assets will fail to load and cannot be fixed with the asset editor.
 
-(While I won't stop you) from assigning the `PetAI` to your kennel, or a `ResidentialBuildingAI` to a campervan; or any other invalid combination of (Net, Building, Citizen, Vehicle, etc.) -- It is strongly recommended that illogical changes be made to a new save file. 
+(While I won't stop you) from assigning the (Citizen)`PetAI` to your (Building)kennel, or a (Building)`ResidentialBuildingAI` to a (Vehicle)campervan; or any other combination of (Net, Building, Citizen, Vehicle, etc.) -- It is strongly recommended that unproven changes be made to a new save file. 
 Duplicate files can be deleted; backups made after the fact are extraordinarily unlikely to fix anything.
 
-###Purpose
+##Purpose
 The main intended use of this mod is to ease the creation of assets with custom AI classes.
 
 ###Usage
