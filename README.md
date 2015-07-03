@@ -18,6 +18,6 @@ The source code of this mod is available at https://github.com/cerebellum42/Buil
 
 If you want to report an issue, please do use the Github issues instead of telling me about problems in the steam workshop comments if possible.
 
-Thanks to [Snow_Cat](https://github.com/dluechoy) for contributing!
+Thanks to [Snow_Cat](http://steamcommunity.com/id/va3mow) for contributing!
 
 If you have modified this mod and think your update should be in it, feel free to send a pull request :)
