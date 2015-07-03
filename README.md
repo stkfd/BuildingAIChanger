@@ -16,7 +16,7 @@ If you intend to use a custom Building AI, make sure to include the namespace of
 
 The source code of this mod is available at https://github.com/cerebellum42/BuildingAIChanger
 
-If you want to report an issue, please do use the Github issues instead of telling me about problems in the steam workshop comments if possible.
+If you want to report an issue, please use the Github issues instead of telling me about problems in the steam workshop comments if possible. I read the comments, but creating an issue will probably get it resolved faster.
 
 Thanks to [Snow_Cat](http://steamcommunity.com/id/va3mow) for contributing!
 
