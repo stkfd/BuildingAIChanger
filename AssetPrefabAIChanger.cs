@@ -258,6 +258,7 @@ namespace AssetPrefabAIChanger
 				m_check.eventCheckChanged += new PropertyChangedEventHandler<bool>(OmniousCheckChanged);
 
 				OmniousEditPrefabChanged(info);
+				RefreshPropertiesPanel(info);
 			}
 		}
 
