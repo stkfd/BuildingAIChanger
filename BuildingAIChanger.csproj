@@ -4,11 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C022C74E-3B5F-4FC6-A455-0341C3061842}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BuildingAIChanger</RootNamespace>
-    <AssemblyName>BuildingAIChanger</AssemblyName>
+    <RootNamespace>AssetPrefabAIChanger</RootNamespace>
+    <AssemblyName>AssetPrefabAIChanger</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -54,10 +53,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BuildingAIChanger.cs" />
-    <Compile Include="EditorController.cs" />
+    <Compile Include="AssetPrefabAIChanger.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SelectAIPanel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="LICENSE" />

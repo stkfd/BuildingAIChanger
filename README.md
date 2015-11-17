@@ -1,23 +1,45 @@
-# BuildingAIChanger
+# Asset Prefab(+Building) AI Changer
 
-This mod adds a field to the Asset Property editor that lets you choose any building AI for the building you're editing.
+###### a derivative of Cerebellum's "BuildingAIChanger"
 
-The main intended use of this mod is to ease the creation of buildings with custom AI classes. Currently, you do need to know the exact name of the AI class, there is no auto-complete or anything like that. If you enter a class that doesn't exist or isn't a PrefabAI, you won't do any harm.
 
-**Take care:** This mod is mostly intended as a tool for people who know what they are doing. You can mess an asset up easily by choosing the wrong AI class. Usually if you break something by doing that, the change is not irreversable, but if you're not sure, make a backup!
+This mod adds a drop down list to the Asset Property editor that lets you choose any AI for the asset you are editing.
 
-Existing properties on the current AI instance are carried over to the new AI as far as possible, but it's probably still a good idea to select the proper AI as early as possible to avoid problems.
+>**Warning** - `WorksAsBuilding()` and `WorksAsNet()` checks are not implemented.
+>
+>It is not known if assigning wildly inappropriate AIs to assets will break them.
+
+>Broken assets will fail to load and cannot be fixed with the asset editor.
+
+(While I won't stop you) from assigning the (Citizen)`PetAI` to your (Building)kennel, or a (Building)`ResidentialBuildingAI` to a (Vehicle)campervan; or any other combination of (Net, Building, Citizen, Vehicle, etc.) -- It is strongly recommended that unproven changes be made to a new save file. 
+Duplicate files can be deleted; backups made after the fact are extraordinarily unlikely to fix anything.
+
+##Purpose
+The main intended use of this mod is to ease the creation of assets with custom AI classes.
+
+###Usage
+You do *not* need to know the exact name of the AI class. The drop down list is populated from the assemblies loaded when the asset editor is opened, then ordered by base-classes.
+
+Load an asset with an AI to be replaced. If the asset lacks a suitable PrefabAI the PrefabAISelector panel be hidden.
+
+Click on the name of the desired AI type from the drop down list or mousewheel until it is selected. The checkbox will deselect itself when the selected type does not match the currently loaded type.  This was done intentionally as accidental mousewheeling could cause values to be lost accidentally.
+
+Checking the checkbox (it will light) will attempt to replace the current prefab with a one of the specified type, and 'refresh' the properties panel.  For prefab types for which the properties are suppressed will hide the panel and will not load properties, but will accept the AI specified.
+
+Existing properties on the current AI instance are carried over to the new AI as far as possible, but this part is still very much a work-in-progress. It's probably a good idea to select the proper AI as early as possible to avoid problems.
 
 ## Using custom AI classes
 
-If you intend to use a custom Building AI, make sure to include the namespace of your mod. For example, use MySuperMod.SuperAI. This is not neccessary for the stock AIs as they all seem to be in the root namespace.
+If you intend to use a custom prefab AI, make sure to remember the namespace of your mod so that you may spot it in the list. For example, use MySuperMod.SuperAI. 
 
-## Source code, Issues, contributing
+This is not neccessary for the stock AIs as they all seem to be in the root namespace.
 
-The source code of this mod is available at https://github.com/cerebellum42/BuildingAIChanger
+## Source code & Issues
 
-If you want to report an issue, please use the Github issues instead of telling me about problems in the steam workshop comments if possible. I read the comments, but creating an issue will probably get it resolved faster.
+**WARNING:** This is just out of the first development phase, don't expect everything to work flawlessly. Some things might break.
 
-Thanks to [Snow_Cat](http://steamcommunity.com/id/va3mow) for contributing!
+The source code of this mod is available at https://github.com/dluechoy/BuildingAIChanger/tree/DropDown
 
-If you have modified this mod and think your update should be in it, feel free to send a pull request :)
+The source code the mod on which this built is availble from https://github.com/cerebellum42/BuildingAIChanger
+
+If you want to report an issue, please do use the Github issues as I may not always read the steam workshop comments.
