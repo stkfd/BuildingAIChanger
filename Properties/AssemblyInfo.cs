@@ -1,4 +1,4 @@
-﻿/* BuildingAIChanger
+﻿/* PrefabAIChanger
  * Copyright (c) 2015 Stefan Kaufhold, All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
