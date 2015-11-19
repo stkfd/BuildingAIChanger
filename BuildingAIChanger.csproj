@@ -55,8 +55,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MeowUI.cs" />
-    <Compile Include="MuAIInfo.cs" />
+    <Compile Include="PrefabAIInfo.cs" />
     <Compile Include="PrefabAIChanger.cs" />
+    <Compile Include="PrefabAITypes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

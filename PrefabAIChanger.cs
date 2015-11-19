@@ -60,8 +60,8 @@ namespace BuildingAIChanger
             {
                 if (mode == LoadMode.LoadAsset || mode == LoadMode.NewAsset)
                 {
-                    m_toolController = ToolsModifierControl.toolController;
-                    m_toolController.eventEditPrefabChanged += InitializeUI;
+                    toolController = ToolsModifierControl.toolController;
+                    toolController.eventEditPrefabChanged += InitializeUI;
                 }
             }
             catch (Exception ex)
@@ -71,47 +71,46 @@ namespace BuildingAIChanger
             }
         }
 
-        private ToolController m_toolController;
+        private ToolController toolController;
 
-        private PrefabInfo m_prefabInfo;
+        private PrefabInfo prefabInfo;
 
-        private MeowUI m_meowUI;
+        private MeowUI meowUI;
 
         private Semaphore sem = new Semaphore(1, 1);
 
         private void InitializeUI(PrefabInfo info)
         {
-            m_toolController.eventEditPrefabChanged -= InitializeUI;
-            m_prefabInfo = info;
-            m_meowUI = MeowUI.BuildInstance(info);
-            m_meowUI.eventCheckChanged += OmniousCheckChanged;
-            m_meowUI.eventSelectedAIChanged += OmniousSelectedValueChanged;
-            m_toolController.eventEditPrefabChanged += OmniousEditPrefabChanged;
+            toolController.eventEditPrefabChanged -= InitializeUI;
+            prefabInfo = info;
+            meowUI = MeowUI.InsertInstance(info);
+            meowUI.eventSelectedAIChanged += OnSelectedValueChanged;
+            meowUI.eventApplyAIClick += ApplyNewAI;
+            toolController.eventEditPrefabChanged += OnEditPrefabChanged;
         }
 
         /// <summary>
-        /// When the checkbox is set attempts to set the Prefab AI to the indicated type (if appropriate)
+        /// When the checkbox is set 
+        /// Attempts to set the Prefab AI to the indicated type (if appropriate)
         /// </summary>
         /// <param name="comp">UICheckBox : UIComponent</param>
         /// <param name="value">isChecked value</param>
-        private void OmniousCheckChanged(MeowUI ui, bool value)
+        private void ApplyNewAI(UIComponent ui, UIMouseEventParameter e)
         {
             sem.WaitOne();
-            if (value && m_prefabInfo.GetAI().GetType().FullName != ui.m_selectAIDropDown.selectedValue)
+            if (prefabInfo.GetAI().GetType().FullName != meowUI.selectAIDropDown.selectedValue)
             {
-                var aiInfo = ui.m_aiInfo.First(x => x.type.FullName == ui.m_selectAIDropDown.selectedValue);
-
                 // remove old ai
-                var oldAI = m_prefabInfo.gameObject.GetComponent<PrefabAI>();
+                var oldAI = prefabInfo.gameObject.GetComponent<PrefabAI>();
                 UnityEngine.Object.DestroyImmediate(oldAI);
 
                 // add new ai
-                var newAI = (PrefabAI) m_prefabInfo.gameObject.AddComponent(aiInfo.type);
+                var newAI = (PrefabAI) prefabInfo.gameObject.AddComponent(meowUI.SelectedAIInfo.type);
 
                 TryCopyAttributes(oldAI, newAI);
 
-                m_prefabInfo.TempInitializePrefab();
-                m_meowUI.RefreshPropertiesPanel(m_prefabInfo);
+                prefabInfo.TempInitializePrefab();
+                meowUI.RefreshPropertiesPanel(prefabInfo);
             }
             sem.Release();
         }
@@ -157,20 +156,15 @@ namespace BuildingAIChanger
                 }
             }
         }
-        
+
         /// <summary>
         /// When the selected AI type is changes, checks to see if it is the current PrefabAI type and sets the Checkbox appropriately.
         /// </summary>
-        /// <param name="comp">(MeowUI) MeowUI</param>
+        /// <param name="comp">(UIComponent) ui</param>
         /// <param name="selected">(string) selectedValue</param>
-        private void OmniousSelectedValueChanged(MeowUI ui, string selected)
+        private void OnSelectedValueChanged(UIComponent ui, string selected)
         {
-            sem.WaitOne();
-
-            ui.m_check.isChecked = m_prefabInfo.GetAI().GetType().FullName == selected;
-            ui.m_check.tooltip = string.Concat("Set PrefabAI to ", selected);
-
-            sem.Release();
+            meowUI.IsAIApplied = prefabInfo.GetAI().GetType().FullName == selected;
         }
 
 
@@ -178,14 +172,10 @@ namespace BuildingAIChanger
         /// When the game loads a prefab reinitialize the PrefabAI Panel, and hide/show it as appropriate.
         /// </summary>
         /// <param name="info">(PrefabInfo) m_editPrefabInfo</param>
-        private void OmniousEditPrefabChanged(PrefabInfo info)
+        private void OnEditPrefabChanged(PrefabInfo info)
         {
-            sem.WaitOne();
-
-            m_prefabInfo = info;
-            m_meowUI.Reset(info);
-
-            sem.Release();
+            prefabInfo = info;
+            meowUI.ResetDropDown(info);
         }
     }
 }

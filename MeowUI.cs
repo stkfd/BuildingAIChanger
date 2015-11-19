@@ -19,94 +19,121 @@
  **/
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using ColossalFramework.UI;
 using UnityEngine;
 
 namespace BuildingAIChanger
 {
-    class MeowUI
+    public class MeowUI : UIPanel
     {
-        private UIPanel m_propPanel;
-        private UIPanel m_prefabAIPanel;
-        private PrefabInfo m_prefabInfo;
-        public UICheckBox m_check;
-        public UIDropDown m_selectAIDropDown;
-        public IOrderedEnumerable<MuAIInfo> m_aiInfo;
-        private UITextureAtlas m_checkboxAtlas;
-        private UITextureAtlas m_dropdownButtonAtlas;
-        private bool m_resetting;
+        public delegate void SelectedAIChangedHandler(MeowUI ui, string value);
 
-        private MeowUI(PrefabInfo info, UIPanel decorationPropertiesPanel)
+        private PrefabAITypes aiTypes;
+        private UITextureAtlas dropdownButtonAtlas;
+        private PrefabInfo prefabInfo;
+        private UIComponent propPanel;
+        public UIDropDown selectAIDropDown;
+        private ApplyButton applyButton;
+        private bool resetting;
+
+        public PrefabAIInfo SelectedAIInfo
         {
-            m_propPanel = decorationPropertiesPanel;
-            var propPanelContainer = m_propPanel.Find<UIScrollablePanel>("Container");
-            m_checkboxAtlas = m_propPanel.Find<UISlicedSprite>("Caption").atlas;
-
-            var label = BuildLabel();
-            m_check = BuildCheckBox();
-            m_selectAIDropDown = BuildDropDown();
-            m_prefabAIPanel = BuildPrefabAIPanel(label, m_check, m_selectAIDropDown);
-            propPanelContainer.AttachUIComponent(m_prefabAIPanel.gameObject);
-
-            //	so let's steal from one of the appropriate style. 
-            m_dropdownButtonAtlas =
-                m_propPanel.Find<UIPanel>("Size").Find<UIDropDown>("CellWidth").Find<UIButton>("Button").atlas;
-            
-
-            m_aiInfo = CollectAIInfo();
-            foreach (var mew in m_aiInfo)
-            {
-                /*
-                    string nextcat = string.Format("{0}{1}{2}{3}{4}",mew.fullname.Substring(trindex),mew.buildingAI?",b":"",mew.citizenAI?",c":"",mew.netAI?",n":"",mew.vehicleAI?",v":"");
-                    m_selectAIDropDown.AddItem(nextcat);
-                */
-                m_selectAIDropDown.AddItem(mew.type.FullName);
-            }
-            m_selectAIDropDown.selectedIndex = 0;
-            // Some how I can't help but feel that this is an invitation to disaster.
-            m_selectAIDropDown.position = new Vector3(210.0f, 0.0f);
-            Reset(info);
+            get { return aiTypes.GetAIInfo(selectAIDropDown.selectedValue); }
+            set { selectAIDropDown.selectedValue = value.type.FullName; }
         }
 
-        public delegate void CheckChanged(MeowUI ui, bool value);
-
-        public delegate void SelectedAIChanged(MeowUI ui, string value);
-
-        public event CheckChanged eventCheckChanged;
-
-        public event SelectedAIChanged eventSelectedAIChanged;
-
-        public void Reset(PrefabInfo info)
+        public bool IsAIApplied
         {
-            m_resetting = true;
-            m_prefabInfo = info;
-            m_check.isChecked = false;
-            if (m_prefabInfo != null)
+            set
+            {
+                applyButton.isEnabled = value;
+                if (value) applyButton.tooltip = "";
+                else applyButton.tooltip = "Set PrefabAI to " + selectAIDropDown.selectedValue;
+            }
+        }
+
+        public event MouseEventHandler eventApplyAIClick;
+
+        public event SelectedAIChangedHandler eventSelectedAIChanged;
+
+        public override void Start()
+        {
+            base.Start();
+            aiTypes = PrefabAITypes.GetInstance();
+            propPanel = parent.parent;
+
+            width = 393;
+            height = 26;
+
+            //	so let's steal from one of the appropriate style. 
+            dropdownButtonAtlas =
+                propPanel.Find<UIPanel>("Size").Find<UIDropDown>("CellWidth").Find<UIButton>("Button").atlas;
+
+            var label = AddUIComponent<Label>();
+            label.position = new Vector3(10, 0);
+
+            applyButton = AddUIComponent<ApplyButton>();
+            applyButton.eventClick +=
+                delegate(UIComponent component, UIMouseEventParameter param)
+                {
+                    eventApplyAIClick?.Invoke(this, param);
+                };
+
+            selectAIDropDown = AddUIComponent<DropDown>();
+            selectAIDropDown.eventSelectedIndexChanged +=
+                delegate
+                {
+                    if (!resetting) eventSelectedAIChanged?.Invoke(this, selectAIDropDown.selectedValue);
+                };
+            selectAIDropDown.listScrollbar = propPanel.Find<UIScrollbar>("Scrollbar");
+
+            foreach (var aiInfo in aiTypes.All())
+            {
+                selectAIDropDown.AddItem(aiInfo.type.FullName);
+            }
+            selectAIDropDown.selectedIndex = 0;
+        }
+
+        public static MeowUI InsertInstance(PrefabInfo info)
+        {
+            var view = UIView.GetAView();
+            if (view == null) return null;
+
+            var uiContainer = view.FindUIComponent("FullScreenContainer");
+            var meowUI =
+                uiContainer.Find<UIPanel>("DecorationProperties")
+                    .Find<UIScrollablePanel>("Container")
+                    .AddUIComponent<MeowUI>();
+            meowUI.ResetDropDown(info);
+            return meowUI;
+        }
+
+        public void ResetDropDown(PrefabInfo info)
+        {
+            resetting = true;
+            prefabInfo = info;
+            if (prefabInfo != null)
             {
                 var assetAI = info.GetAI();
                 if (assetAI != null)
                 {
-                    m_selectAIDropDown.selectedValue = assetAI.GetType().FullName;
-                    m_check.isChecked = true;
+                    selectAIDropDown.selectedValue = assetAI.GetType().FullName;
+                    applyButton.isEnabled = false;
                 }
                 else
                 {
-                    m_selectAIDropDown.selectedValue = "PrefabAI";
-                    m_prefabAIPanel.Hide();
+                    selectAIDropDown.selectedValue = "PrefabAI";
                 }
             }
             else
             {
-                m_selectAIDropDown.selectedValue = "PrefabAI";
-                m_prefabAIPanel.Hide();
+                selectAIDropDown.selectedValue = "PrefabAI";
+                Hide();
             }
             RefreshPropertiesPanel(info);
-            m_resetting = false;
+            resetting = false;
         }
 
         /// <summary>
@@ -115,215 +142,94 @@ namespace BuildingAIChanger
         /// <param name="prefabInfo">(PrefabInfo) </param>
         public void RefreshPropertiesPanel(PrefabInfo prefabInfo)
         {
-            var decorationPropertiesPanel = m_propPanel.GetComponent<DecorationPropertiesPanel>();
+            var decorationPropertiesPanel = propPanel.GetComponent<DecorationPropertiesPanel>();
             decorationPropertiesPanel.GetType()
                 .InvokeMember("Refresh", BindingFlags.InvokeMethod | BindingFlags.NonPublic, null,
-                    decorationPropertiesPanel, new object[] { prefabInfo });
+                    decorationPropertiesPanel, new object[] {prefabInfo});
         }
 
-        private UIPanel BuildPrefabAIPanel(UILabel label, UICheckBox checkBox, UIDropDown selectAIDropDown)
+        private class Label : UILabel
         {
-            var prefabAIPanel = new UIPanel
+            public override void OnEnable()
             {
-                width = 393,
-                height = 25
-            };
-            prefabAIPanel.AttachUIComponent(label.gameObject);
-            prefabAIPanel.AttachUIComponent(checkBox.gameObject);
-            return prefabAIPanel;
-        }
-
-        private UILabel BuildLabel()
-        {
-            return new UILabel
-            {
-                text = "PrefabAI",
-                tooltip = "Determines the behaviour and availble properties of the prefab.",
-                width = 181,
-                height = 18,
-                position = new Vector3(0.0f, -4.0f), // buggy invert from unknown source.
-                autoSize = false,
-                textColor = new Color32(125, 185, 255, 255),
-                disabledTextColor = new Color32(255, 255, 255, 255)
-            };
-        }
-
-        private UICheckBox BuildCheckBox()
-        {
-            var check = new UICheckBox
-            {
-                tooltip = "",
-                width = 18,
-                height = 18,
-                position = new Vector3(190.0f, 0.0f)
-            };
-
-            var checkUncheck = check.AddUIComponent<UISprite>();
-            //UITextureAtlas "Ingame"
-            checkUncheck.atlas = m_checkboxAtlas;
-            checkUncheck.spriteName = "check-unchecked";
-            checkUncheck.width = 16;
-            checkUncheck.height = 16;
-            checkUncheck.position = new Vector3(0.0f, 0.0f);
-
-            var checkCheck = (UISprite)checkUncheck.AddUIComponent<UISprite>();
-            checkCheck.atlas = m_checkboxAtlas;
-            checkCheck.spriteName = "check-checked";
-            checkCheck.width = 16;
-            checkCheck.height = 16;
-            checkCheck.position = new Vector3(0.0f, 0.0f);
-
-            check.checkedBoxObject = checkCheck;
-            check.eventCheckChanged +=
-                delegate(UIComponent component, bool value) { if (!m_resetting) eventCheckChanged?.Invoke(this, value); };
-            return check;
-        }
-
-        private IOrderedEnumerable<MuAIInfo> CollectAIInfo()
-        {
-            //get all subclasses of PrefabAI 
-            var aiInfo = new List<MuAIInfo>();
-
-            foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                Type[] assemblyTypes = a.GetTypes();
-                for (int j = 0; j < assemblyTypes.Length; j++)
-                {
-                    if (assemblyTypes[j].IsSubclassOf(typeof(PrefabAI)))
-                    {
-                        MuAIInfo temp = new MuAIInfo();
-                        temp.type = assemblyTypes[j];
-                        temp.fullname = assemblyTypes[j].FullName;
-                        var derived = assemblyTypes[j];
-                        do
-                        {
-                            derived = derived.BaseType;
-                            if (derived != null)
-                            {
-                                // temp.fullname.Insert(0,derived.FullName);
-                                temp.fullname = String.Concat(derived.FullName, ".", temp.fullname);
-                            }
-                        } while (derived != null);
-                        if (assemblyTypes[j].IsSubclassOf(typeof(BuildingAI)))
-                        {
-                            temp.buildingAI = true;
-                        }
-                        if (assemblyTypes[j].IsSubclassOf(typeof(CitizenAI)))
-                        {
-                            temp.citizenAI = true;
-                        }
-                        if (assemblyTypes[j].IsSubclassOf(typeof(NetAI)))
-                        {
-                            temp.netAI = true;
-                        }
-                        if (assemblyTypes[j].IsSubclassOf(typeof(VehicleAI)))
-                        {
-                            temp.vehicleAI = true;
-                        }
-                        aiInfo.Add(temp);
-                    }
-                }
+                base.OnEnable();
+                text = "PrefabAI";
+                tooltip = "Determines the behaviour and availble properties of the prefab.";
+                width = 181;
+                height = 18;
+                autoSize = false;
+                textColor = new Color32(125, 185, 255, 255);
+                disabledTextColor = new Color32(255, 255, 255, 255);
             }
+        }
 
-            var tempo = new MuAIInfo();
-            tempo.type = typeof(PrefabAI);
-            tempo.fullname = tempo.type.FullName;
-            var derivedo = tempo.type;
-            do
+        private class ApplyButton : UIButton
+        {
+            public override void Start()
             {
-                derivedo = derivedo.BaseType;
-                if (derivedo != null)
-                {
-                    tempo.fullname = String.Concat(derivedo.FullName, ".", tempo.fullname);
-                }
-            } while (derivedo != null);
-            aiInfo.Add(tempo);
+                base.Start();
 
-            /*if(null != Singleton<ToolManager>.instance.m_properties.m_editPrefabInfo as BuildingInfo) {
-                AIInfosort = aiInfo.OrderBy(s => s.buildingAI).ThenBy(s => s.citizenAI).ThenBy(s => s.netAI).ThenBy(s => s.vehicleAI).ThenBy(s => s.type.FullName);
-            } else if(null != Singleton<ToolManager>.instance.m_properties.m_editPrefabInfo as NetInfo) {
-                AIInfosort = aiInfo.OrderBy(s => s.netAI).ThenBy(s => s.buildingAI).ThenBy(s => s.citizenAI).ThenBy(s => s.vehicleAI).ThenBy(s => s.type.FullName);
-            } else if(null != Singleton<ToolManager>.instance.m_properties.m_editPrefabInfo as VehicleInfo) {
-                AIInfosort = aiInfo.OrderBy(s => s.vehicleAI).ThenBy(s => s.netAI).ThenBy(s => s.buildingAI).ThenBy(s => s.citizenAI).ThenBy(s => s.type.FullName);
-            } else if(null != Singleton<ToolManager>.instance.m_properties.m_editPrefabInfo as CitizenInfo) {
-                AIInfosort = aiInfo.OrderBy(s => s.citizenAI).ThenBy(s => s.vehicleAI).ThenBy(s => s.netAI).ThenBy(s => s.buildingAI).ThenBy(s => s.type.FullName);
-            }*/
-            var aiInfosort = aiInfo.OrderBy(s => s.fullname);
+                name = "ApplyButton";
+                text = "Apply";
+                size = new Vector3(50, 20);
+                position = new Vector3(145, 0);
 
-            /*	//	might be useful for display purposes.
-            int trimcomp = Math.Min(AIInfosort.First().fullname.Length,AIInfosort.Last().fullname.Length);
-            int trindex = 0;
-            for (int i = 0; i < trimcomp; i ++) {
-                if (AIInfosort.First().fullname[i] != AIInfosort.Last().fullname[i]){
-                    trindex = i;
-                    i = trimcomp;
-                }
+                normalBgSprite = "ButtonMenu";
+                pressedTextColor = new Color32(30, 30, 44, 255);
+                hoveredTextColor = new Color32(7, 132, 255, 255);
             }
-            */
-
-            return aiInfosort;
         }
 
-        private UIDropDown BuildDropDown()
+        private class DropDown : UIDropDown
         {
-           var dropDown = new UIDropDown
+            public override void Start()
             {
-                name = "SelectAIDropDown",
-                size = new Vector2(171.0f, 20.0f),
-                itemHeight = 25,
-                itemHover = "ListItemHover",
-                itemHighlight = "ListItemHighlight",
-                normalBgSprite = "InfoDisplay",
-                disabledBgSprite = "SubBarButtonBaseDisabled",
-                listBackground = "InfoDisplay",
-                listWidth = 171,
-                listHeight = 400,
-                listPosition = ColossalFramework.UI.UIDropDown.PopupListPosition.Above,
-                foregroundSpriteMode = UIForegroundSpriteMode.Stretch,
-                popupColor = new Color32(255, 255, 255, 255),
-                popupTextColor = new Color32(12, 21, 22, 255),
-                color = new Color32(255, 255, 255, 255),
-                textColor = new Color32(12, 21, 22, 255),
-                useOutline = true,
-                outlineColor = new Color32(255, 255, 255, 64),
-                bottomColor = new Color32(255, 255, 255, 255),
-                verticalAlignment = UIVerticalAlignment.Middle,
-                horizontalAlignment = UIHorizontalAlignment.Center,
-                listScrollbar = new UIScrollbar()
-            };
-            //m_selectAIDropDown.listScrollbar = m_propPanel.Find<UIScrollbar>("Scrollbar");
-            dropDown.eventSelectedIndexChanged +=
-                delegate { if (!m_resetting) eventSelectedAIChanged?.Invoke(this, m_selectAIDropDown.selectedValue); };
+                base.Start();
+                var parent = (MeowUI) this.parent;
 
-            var dropDownButton = dropDown.AddUIComponent<UIButton>();
-            dropDown.triggerButton = dropDownButton;
-            dropDownButton.size = dropDown.size;
-            dropDownButton.relativePosition = new Vector3(0.0f, 0.0f);
-            dropDownButton.textVerticalAlignment = UIVerticalAlignment.Middle;
-            dropDownButton.textHorizontalAlignment = UIHorizontalAlignment.Left;
-            dropDownButton.foregroundSpriteMode = UIForegroundSpriteMode.Fill;
-            dropDownButton.horizontalAlignment = UIHorizontalAlignment.Right;
-            dropDownButton.verticalAlignment = UIVerticalAlignment.Middle;
-            
-            dropDownButton.normalFgSprite = "IconUpArrow";
-            dropDownButton.hoveredFgSprite = "IconUpArrowHovered";
-            dropDownButton.pressedFgSprite = "IconUpArrowPressed";
-            dropDownButton.focusedFgSprite = "IconUpArrowFocused";
-            dropDownButton.disabledFgSprite = "IconUpArrowDisabled";
-            dropDownButton.atlas = m_dropdownButtonAtlas;
-            //selectAIDropDownButton.normalFgSprite = widthButton.normalFgSprite; //"IconUpArrow";
-            return dropDown;
-        }
+                name = "SelectAIDropDown";
+                position = new Vector3(200, 0);
+                size = new Vector2(190, 20);
+                pivot = UIPivotPoint.TopRight;
 
-        public static MeowUI BuildInstance(PrefabInfo info)
-        {
-            var view = UIView.GetAView();
-            if (view == null) return null;
+                normalBgSprite = "TextFieldPanel";
+                itemHeight = 27;
+                itemHover = "ListItemHover";
+                itemHighlight = "ListItemHighlight";
+                itemPadding = new RectOffset(5, 0, 5, 0);
+                m_TextFieldPadding = new RectOffset(7, 0, 1, 0);
+                disabledBgSprite = "SubBarButtonBaseDisabled";
+                listBackground = "InfoDisplay";
+                listWidth = 171;
+                listHeight = 400;
+                listPosition = PopupListPosition.Above;
+                popupColor = new Color32(255, 255, 255, 255);
+                popupTextColor = new Color32(12, 21, 22, 255);
+                color = new Color32(255, 255, 255, 255);
+                textColor = new Color32(12, 21, 22, 255);
+                useOutline = false;
+                bottomColor = new Color32(255, 255, 255, 255);
+                verticalAlignment = UIVerticalAlignment.Middle;
+                horizontalAlignment = UIHorizontalAlignment.Center;
 
-            var uiContainer = view.FindUIComponent("FullScreenContainer");
-            var decorationPropertiesPanel = uiContainer.Find<UIPanel>("DecorationProperties");
-            var ui = new MeowUI(info, decorationPropertiesPanel);
-            return ui;
+                var dropDownButton = AddUIComponent<UIButton>();
+                triggerButton = dropDownButton;
+                dropDownButton.size = size;
+                dropDownButton.relativePosition = new Vector3(0, -1);
+                dropDownButton.textVerticalAlignment = UIVerticalAlignment.Middle;
+                dropDownButton.textHorizontalAlignment = UIHorizontalAlignment.Left;
+                dropDownButton.horizontalAlignment = UIHorizontalAlignment.Right;
+                dropDownButton.verticalAlignment = UIVerticalAlignment.Middle;
+                dropDownButton.foregroundSpriteMode = UIForegroundSpriteMode.Scale;
+
+                dropDownButton.normalFgSprite = "IconUpArrow";
+                dropDownButton.hoveredFgSprite = "IconUpArrowHovered";
+                dropDownButton.pressedFgSprite = "IconUpArrowPressed";
+                dropDownButton.focusedFgSprite = "IconUpArrowFocused";
+                dropDownButton.disabledFgSprite = "IconUpArrowDisabled";
+                dropDownButton.atlas = parent.dropdownButtonAtlas;
+                //selectAIDropDownButton.normalFgSprite = widthButton.normalFgSprite; //"IconUpArrow";
+            }
         }
     }
 }
