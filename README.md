@@ -1,7 +1,6 @@
-# Asset Prefab(+Building) AI Changer
+# Prefab AI Changer
 
-###### a derivative of Cerebellum's "BuildingAIChanger"
-
+Originally Building AI Changer, after merge of Snow_Cat's (D Lue Choy) additions and subsequent rewrite generic Prefab AI changer.
 
 This mod adds a drop down list to the Asset Property editor that lets you choose any AI for the asset you are editing.
 
