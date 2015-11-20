@@ -20,7 +20,7 @@
 
 using System;
 
-namespace BuildingAIChanger
+namespace PrefabAIChanger
 {
     public class PrefabAIInfo
     {

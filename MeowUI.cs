@@ -26,7 +26,7 @@ using ColossalFramework.UI;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace BuildingAIChanger
+namespace PrefabAIChanger
 {
     public class MeowUI : UIPanel
     {

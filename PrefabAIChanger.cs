@@ -27,7 +27,7 @@ using ColossalFramework.UI;
 using ICities;
 using UnityEngine;
 
-namespace BuildingAIChanger
+namespace PrefabAIChanger
 {
     /// <summary>
     /// AI Changer main mod class; provides Mod Info and handles loading

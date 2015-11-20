@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using ColossalFramework;
 using UnityEngine;
 
-namespace BuildingAIChanger
+namespace PrefabAIChanger
 {
     class PrefabAITypes : Singleton<PrefabAITypes>
     {
