@@ -119,7 +119,6 @@ namespace BuildingAIChanger
 
         public void UpdatePrefabInfo(PrefabInfo info)
         {
-            Debug.Log("reset dropdown");
             var newAI = info?.gameObject.GetComponent<PrefabAI>();
             if (newAI == null) return;
             resetting = true;

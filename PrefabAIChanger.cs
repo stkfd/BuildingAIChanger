@@ -102,7 +102,6 @@ namespace BuildingAIChanger
         private void ApplyNewAI(UIComponent ui, UIMouseEventParameter e)
         {
             sem.WaitOne();
-            Debug.Log("applying new ai class");
             if (prefabInfo.GetAI().GetType().FullName != meowUI.selectAIDropDown.selectedValue)
             {
                 // remove old ai
