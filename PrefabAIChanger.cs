@@ -115,8 +115,7 @@ namespace BuildingAIChanger
                 TryCopyAttributes(oldAI, newAI);
 
                 prefabInfo.TempInitializePrefab();
-                meowUI.UpdatePrefabInfo(prefabInfo);
-                meowUI.IsAIApplied = true;
+                meowUI.PrefabInfo = prefabInfo;
             }
             sem.Release();
         }
@@ -170,7 +169,6 @@ namespace BuildingAIChanger
         /// <param name="selected">(string) selectedValue</param>
         private void OnSelectedValueChanged(UIComponent ui, string selected)
         {
-            meowUI.IsAIApplied = prefabInfo.GetAI().GetType().FullName == selected;
         }
 
 
@@ -181,7 +179,18 @@ namespace BuildingAIChanger
         private void OnEditPrefabChanged(PrefabInfo info)
         {
             prefabInfo = info;
-            meowUI.UpdatePrefabInfo(info);
+
+            var ai = prefabInfo.gameObject.GetComponent<PrefabAI>();
+            if (ai == null)
+            {
+                meowUI.Hide();
+            }
+            else
+            {
+                meowUI.PrefabInfo = info;
+                meowUI.ResetDropDown();
+                meowUI.Show();
+            }
         }
     }
 }

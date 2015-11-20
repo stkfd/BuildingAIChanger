@@ -8,14 +8,8 @@ using UnityEngine;
 
 namespace BuildingAIChanger
 {
-    class PrefabAITypes
+    class PrefabAITypes : Singleton<PrefabAITypes>
     {
-        private static PrefabAITypes instance;
-        public static PrefabAITypes GetInstance()
-        {
-            return instance ?? (instance = new PrefabAITypes());
-        }
-
         private PrefabAITypes() { }
         
         private bool typesLoaded = false;
