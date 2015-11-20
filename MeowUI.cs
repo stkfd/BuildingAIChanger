@@ -48,9 +48,12 @@ namespace BuildingAIChanger
         {
             set
             {
-                applyButton.isEnabled = value;
-                if (value) applyButton.tooltip = "";
-                else applyButton.tooltip = "Set PrefabAI to " + selectAIDropDown.selectedValue;
+                if (applyButton != null)
+                {
+                    applyButton.isEnabled = !value;
+                    if (value) applyButton.tooltip = "";
+                    applyButton.tooltip = "Set PrefabAI to " + selectAIDropDown.selectedValue;
+                }
             }
         }
 
@@ -83,9 +86,12 @@ namespace BuildingAIChanger
 
             selectAIDropDown = AddUIComponent<DropDown>();
             selectAIDropDown.eventSelectedIndexChanged +=
-                delegate
+                delegate(UIComponent component, int value)
                 {
-                    if (!resetting) eventSelectedAIChanged?.Invoke(this, selectAIDropDown.selectedValue);
+                    if (!resetting)
+                    {
+                        eventSelectedAIChanged?.Invoke(this, selectAIDropDown.selectedValue);
+                    }
                 };
             selectAIDropDown.listScrollbar = propPanel.Find<UIScrollbar>("Scrollbar");
 
@@ -93,7 +99,7 @@ namespace BuildingAIChanger
             {
                 selectAIDropDown.AddItem(aiInfo.type.FullName);
             }
-            selectAIDropDown.selectedIndex = 0;
+            selectAIDropDown.selectedValue = prefabInfo.GetAI().GetType().FullName;
         }
 
         public static MeowUI InsertInstance(PrefabInfo info)
@@ -106,33 +112,27 @@ namespace BuildingAIChanger
                 uiContainer.Find<UIPanel>("DecorationProperties")
                     .Find<UIScrollablePanel>("Container")
                     .AddUIComponent<MeowUI>();
-            meowUI.ResetDropDown(info);
+            meowUI.UpdatePrefabInfo(info);
+            meowUI.IsAIApplied = true;
             return meowUI;
         }
 
-        public void ResetDropDown(PrefabInfo info)
+        public void UpdatePrefabInfo(PrefabInfo info)
         {
+            Debug.Log("reset dropdown");
+            var newAI = info?.gameObject.GetComponent<PrefabAI>();
+            if (newAI == null) return;
             resetting = true;
+            var oldAI = prefabInfo?.gameObject.GetComponent<PrefabAI>();
+            
+            bool changing = (oldAI == null) || oldAI.GetType().FullName == newAI.GetType().FullName;
             prefabInfo = info;
-            if (prefabInfo != null)
+
+            if (changing)
             {
-                var assetAI = info.GetAI();
-                if (assetAI != null)
-                {
-                    selectAIDropDown.selectedValue = assetAI.GetType().FullName;
-                    applyButton.isEnabled = false;
-                }
-                else
-                {
-                    selectAIDropDown.selectedValue = "PrefabAI";
-                }
+                IsAIApplied = false;
             }
-            else
-            {
-                selectAIDropDown.selectedValue = "PrefabAI";
-                Hide();
-            }
-            RefreshPropertiesPanel(info);
+            RefreshUI();
             resetting = false;
         }
 
@@ -140,12 +140,14 @@ namespace BuildingAIChanger
         /// Reload the property editor panel so the fields of a new AI class appear
         /// </summary>
         /// <param name="prefabInfo">(PrefabInfo) </param>
-        public void RefreshPropertiesPanel(PrefabInfo prefabInfo)
+        public void RefreshUI()
         {
-            var decorationPropertiesPanel = propPanel.GetComponent<DecorationPropertiesPanel>();
-            decorationPropertiesPanel.GetType()
+            var decorationPropertiesPanel = propPanel?.GetComponent<DecorationPropertiesPanel>();
+            decorationPropertiesPanel?.GetType()
                 .InvokeMember("Refresh", BindingFlags.InvokeMethod | BindingFlags.NonPublic, null,
                     decorationPropertiesPanel, new object[] {prefabInfo});
+
+            if (selectAIDropDown != null) selectAIDropDown.selectedValue = prefabInfo.GetAI().GetType().FullName;
         }
 
         private class Label : UILabel
@@ -175,8 +177,10 @@ namespace BuildingAIChanger
                 position = new Vector3(145, 0);
 
                 normalBgSprite = "ButtonMenu";
+                isEnabled = false;
                 pressedTextColor = new Color32(30, 30, 44, 255);
                 hoveredTextColor = new Color32(7, 132, 255, 255);
+                disabledTextColor = new Color32(150, 150, 150, 255);
             }
         }
 

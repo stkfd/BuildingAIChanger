@@ -79,6 +79,10 @@ namespace BuildingAIChanger
 
         private Semaphore sem = new Semaphore(1, 1);
 
+        /// <summary>
+        /// Initialize the UI elements and set up UI events
+        /// </summary>
+        /// <param name="info"></param>
         private void InitializeUI(PrefabInfo info)
         {
             toolController.eventEditPrefabChanged -= InitializeUI;
@@ -98,6 +102,7 @@ namespace BuildingAIChanger
         private void ApplyNewAI(UIComponent ui, UIMouseEventParameter e)
         {
             sem.WaitOne();
+            Debug.Log("applying new ai class");
             if (prefabInfo.GetAI().GetType().FullName != meowUI.selectAIDropDown.selectedValue)
             {
                 // remove old ai
@@ -105,12 +110,14 @@ namespace BuildingAIChanger
                 UnityEngine.Object.DestroyImmediate(oldAI);
 
                 // add new ai
-                var newAI = (PrefabAI) prefabInfo.gameObject.AddComponent(meowUI.SelectedAIInfo.type);
+                var newAIInfo = meowUI.SelectedAIInfo;
+                var newAI = (PrefabAI) prefabInfo.gameObject.AddComponent(newAIInfo.type);
 
                 TryCopyAttributes(oldAI, newAI);
 
                 prefabInfo.TempInitializePrefab();
-                meowUI.RefreshPropertiesPanel(prefabInfo);
+                meowUI.UpdatePrefabInfo(prefabInfo);
+                meowUI.IsAIApplied = true;
             }
             sem.Release();
         }
@@ -175,7 +182,7 @@ namespace BuildingAIChanger
         private void OnEditPrefabChanged(PrefabInfo info)
         {
             prefabInfo = info;
-            meowUI.ResetDropDown(info);
+            meowUI.UpdatePrefabInfo(info);
         }
     }
 }
