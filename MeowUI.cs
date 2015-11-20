@@ -157,6 +157,7 @@ namespace PrefabAIChanger
             bool canBeApplied = ai != null && ai.GetType().FullName != selectAIDropDown.selectedValue;
             if (applyButton != null)
             {
+                applyButton.tooltipBox.Hide();
                 applyButton.isEnabled = canBeApplied;
                 applyButton.tooltip = canBeApplied ? "Set PrefabAI to " + selectAIDropDown.selectedValue : "";
             }

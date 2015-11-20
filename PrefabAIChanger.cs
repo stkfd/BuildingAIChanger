@@ -88,7 +88,6 @@ namespace PrefabAIChanger
             toolController.eventEditPrefabChanged -= InitializeUI;
             prefabInfo = info;
             meowUI = MeowUI.InsertInstance(info);
-            meowUI.eventSelectedAIChanged += OnSelectedValueChanged;
             meowUI.eventApplyAIClick += ApplyNewAI;
             toolController.eventEditPrefabChanged += OnEditPrefabChanged;
         }
@@ -113,33 +112,30 @@ namespace PrefabAIChanger
                 if (newAIInfo != null)
                 {
                     var newAI = (PrefabAI)prefabInfo.gameObject.AddComponent(newAIInfo.type);
-
                     TryCopyAttributes(oldAI, newAI);
-
-                    prefabInfo.TempInitializePrefab();
+                    prefabInfo.InitializePrefab();
                     meowUI.PrefabInfo = prefabInfo;
                 }
                 else
                 {
-                    Debug.LogError("New AI Info could not be found. ");
+                    Debug.LogError("New AI Info could not be found.");
                 }
             }
             sem.Release();
         }
 
-
         /// <summary>
         /// Copies all attributes that share the same name and type from one AI object to another
         /// </summary>
-        /// <param name="oldAI">Source AI instance</param>
-        /// <param name="newAI">Destination AI instance</param>
-        private void TryCopyAttributes(PrefabAI oldAI, PrefabAI newAI)
+        /// <param name="src">Source AI instance</param>
+        /// <param name="dst">Destination AI instance</param>
+        private void TryCopyAttributes(PrefabAI src, PrefabAI dst)
         {
             var oldAIFields =
-                oldAI.GetType()
+                src.GetType()
                     .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
                                BindingFlags.FlattenHierarchy);
-            var newAIFields = newAI.GetType()
+            var newAIFields = dst.GetType()
                 .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
                            BindingFlags.FlattenHierarchy);
 
@@ -159,7 +155,7 @@ namespace PrefabAIChanger
                     {
                         if (newAIField.GetType().Equals(fieldInfo.GetType()))
                         {
-                            newAIField.SetValue(newAI, fieldInfo.GetValue(oldAI));
+                            newAIField.SetValue(dst, fieldInfo.GetValue(src));
                         }
                     }
                     catch (NullReferenceException)
@@ -168,17 +164,7 @@ namespace PrefabAIChanger
                 }
             }
         }
-
-        /// <summary>
-        /// When the selected AI type is changes, checks to see if it is the current PrefabAI type and sets the Checkbox appropriately.
-        /// </summary>
-        /// <param name="comp">(UIComponent) ui</param>
-        /// <param name="selected">(string) selectedValue</param>
-        private void OnSelectedValueChanged(UIComponent ui, string selected)
-        {
-        }
-
-
+        
         /// <summary>
         /// When the game loads a prefab reinitialize the PrefabAI Panel, and hide/show it as appropriate.
         /// </summary>
