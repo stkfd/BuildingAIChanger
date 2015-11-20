@@ -37,7 +37,7 @@ namespace BuildingAIChanger
 
         public PrefabAIInfo GetAIInfo(string name)
         {
-            return All().Find((info) => info.type.Name == name);
+            return All().Find((info) => info.type.FullName == name);
         }
 
         public void Invalidate()

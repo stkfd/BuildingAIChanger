@@ -110,12 +110,19 @@ namespace BuildingAIChanger
 
                 // add new ai
                 var newAIInfo = meowUI.SelectedAIInfo;
-                var newAI = (PrefabAI) prefabInfo.gameObject.AddComponent(newAIInfo.type);
+                if (newAIInfo != null)
+                {
+                    var newAI = (PrefabAI)prefabInfo.gameObject.AddComponent(newAIInfo.type);
 
-                TryCopyAttributes(oldAI, newAI);
+                    TryCopyAttributes(oldAI, newAI);
 
-                prefabInfo.TempInitializePrefab();
-                meowUI.PrefabInfo = prefabInfo;
+                    prefabInfo.TempInitializePrefab();
+                    meowUI.PrefabInfo = prefabInfo;
+                }
+                else
+                {
+                    Debug.LogError("New AI Info could not be found. ");
+                }
             }
             sem.Release();
         }
