@@ -18,12 +18,9 @@
  * General Public License along with this library.
  **/
 
-using System;
-using System.Linq;
 using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.UI;
-using JetBrains.Annotations;
 using UnityEngine;
 
 namespace PrefabAIChanger
