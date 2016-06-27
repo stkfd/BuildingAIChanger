@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using ColossalFramework;
 using UnityEngine;
+using System.Reflection;
+using System.Linq;
 
 namespace PrefabAIChanger
 {
@@ -18,9 +20,24 @@ namespace PrefabAIChanger
 
             foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
             {
-                foreach (var type in a.GetTypes())
+                IEnumerable<Type> types;
+                try
                 {
-                    if (type.IsSubclassOf(typeof (PrefabAI)))
+                    types = a.GetTypes();
+                }
+                catch (ReflectionTypeLoadException e)
+                {
+                    types = e.Types.Where(t => t != null);
+                }
+                catch (Exception e)
+                {
+                    Debug.Log(e.Message);
+                    continue;
+                }
+                
+                foreach (var type in types)
+                {
+                    if (type.IsSubclassOf(typeof(PrefabAI)))
                     {
                         allTypes.Add(new PrefabAIInfo(type));
                     }
@@ -31,7 +48,7 @@ namespace PrefabAIChanger
 
             return allTypes;
         }
-
+        
         public PrefabAIInfo GetAIInfo(string name)
         {
             return All().Find((info) => info.type.FullName == name);
