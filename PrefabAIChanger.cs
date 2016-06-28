@@ -95,32 +95,40 @@ namespace PrefabAIChanger
         /// When the checkbox is set 
         /// Attempts to set the Prefab AI to the indicated type (if appropriate)
         /// </summary>
-        /// <param name="comp">UICheckBox : UIComponent</param>
-        /// <param name="value">isChecked value</param>
         private void ApplyNewAI(UIComponent ui, UIMouseEventParameter e)
         {
             sem.WaitOne();
-            if (prefabInfo.GetAI().GetType().FullName != meowUI.selectAIDropDown.selectedValue)
-            {
-                // remove old ai
-                var oldAI = prefabInfo.gameObject.GetComponent<PrefabAI>();
-                UnityEngine.Object.DestroyImmediate(oldAI);
 
-                // add new ai
-                var newAIInfo = meowUI.SelectedAIInfo;
-                if (newAIInfo != null)
+            var confirmPanel = UIView.library.ShowModal<ConfirmPanel>("ConfirmPanel", (UIComponent component, int result) =>
+            {
+                if (result != -1)
                 {
-                    var newAI = (PrefabAI)prefabInfo.gameObject.AddComponent(newAIInfo.type);
-                    TryCopyAttributes(oldAI, newAI);
-                    prefabInfo.InitializePrefab();
-                    meowUI.PrefabInfo = prefabInfo;
+                    if (prefabInfo.GetAI().GetType().FullName != meowUI.selectAIDropDown.selectedValue)
+                    {
+                        // remove old ai
+                        var oldAI = prefabInfo.gameObject.GetComponent<PrefabAI>();
+                        UnityEngine.Object.DestroyImmediate(oldAI);
+
+                        // add new ai
+                        var newAIInfo = meowUI.SelectedAIInfo;
+                        if (newAIInfo != null)
+                        {
+                            var newAI = (PrefabAI) prefabInfo.gameObject.AddComponent(newAIInfo.type);
+                            TryCopyAttributes(oldAI, newAI, result == 0);
+                            prefabInfo.InitializePrefab();
+                            meowUI.PrefabInfo = prefabInfo;
+                        }
+                        else
+                        {
+                            Debug.LogError("New AI Info could not be found.");
+                        }
+                    }
                 }
-                else
-                {
-                    Debug.LogError("New AI Info could not be found.");
-                }
-            }
-            sem.Release();
+                sem.Release();
+            });
+            confirmPanel.SetMessage("Copy all attributes", "Copy only visible attributes or all attributes? Only copy all attributes if you know what you are doing.");
+            confirmPanel.Find<UIButton>("Yes").text = "All";
+            confirmPanel.Find<UIButton>("No").text = "Only visible";
         }
 
         /// <summary>
@@ -128,17 +136,15 @@ namespace PrefabAIChanger
         /// </summary>
         /// <param name="src">Source AI instance</param>
         /// <param name="dst">Destination AI instance</param>
-        private void TryCopyAttributes(PrefabAI src, PrefabAI dst)
+        /// <param name="safe"></param>
+        private void TryCopyAttributes(PrefabAI src, PrefabAI dst, bool safe = true)
         {
-            var oldAIFields =
-                src.GetType()
-                    .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
-                               BindingFlags.FlattenHierarchy);
+            var oldAIFields = src.GetType()
+                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
             var newAIFields = dst.GetType()
-                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
-                           BindingFlags.FlattenHierarchy);
+                .GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
 
-            var newAIFieldDic = new Dictionary<String, FieldInfo>(newAIFields.Length);
+            var newAIFieldDic = new Dictionary<string, FieldInfo>(newAIFields.Length);
             foreach (var field in newAIFields)
             {
                 newAIFieldDic.Add(field.Name, field);
@@ -146,13 +152,18 @@ namespace PrefabAIChanger
 
             foreach (var fieldInfo in oldAIFields)
             {
-                if (fieldInfo.IsDefined(typeof (CustomizablePropertyAttribute), true))
+                // do not copy attributes marked NonSerialized
+                bool copyField = !fieldInfo.IsDefined(typeof(NonSerializedAttribute), true);
+                
+                if (safe && !fieldInfo.IsDefined(typeof(CustomizablePropertyAttribute), true)) copyField = false;
+
+                if (copyField)
                 {
                     FieldInfo newAIField;
                     newAIFieldDic.TryGetValue(fieldInfo.Name, out newAIField);
                     try
                     {
-                        if (newAIField.GetType().Equals(fieldInfo.GetType()))
+                        if (newAIField != null && newAIField.GetType().Equals(fieldInfo.GetType()))
                         {
                             newAIField.SetValue(dst, fieldInfo.GetValue(src));
                         }
