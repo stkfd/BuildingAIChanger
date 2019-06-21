@@ -35,13 +35,10 @@ namespace PrefabAIChanger
                     continue;
                 }
                 
-                foreach (var type in types)
-                {
-                    if (type.IsSubclassOf(typeof(PrefabAI)))
-                    {
-                        allTypes.Add(new PrefabAIInfo(type));
-                    }
-                }
+                allTypes.AddRange(
+                    types.Where(t => t.IsSubclassOf(typeof(PrefabAI)))
+                        .Select(t => new PrefabAIInfo(t))
+                );
             }
 
             typesLoaded = true;

@@ -18,6 +18,8 @@
  * General Public License along with this library.
  **/
 
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.UI;
@@ -30,11 +32,11 @@ namespace PrefabAIChanger
         public delegate void SelectedAIChangedHandler(MeowUI ui, string value);
 
         public delegate void PrefabInfoChanged(MeowUI ui, PrefabInfo oldInfo, PrefabInfo newInfo);
-        
+
         private UITextureAtlas dropdownButtonAtlas;
 
         private PrefabInfo prefabInfo;
-        
+
         public PrefabInfo PrefabInfo
         {
             get { return prefabInfo; }
@@ -58,13 +60,14 @@ namespace PrefabAIChanger
 
                     if (changing) eventPrefabInfoUpdated?.Invoke(this, oldInfo, prefabInfo);
                 }
+
                 prefabChanging = false;
             }
         }
 
         public PrefabAIInfo SelectedAIInfo
         {
-            get { return Singleton<PrefabAITypes>.instance.GetAIInfo(selectAIDropDown.selectedValue); }
+            get => Singleton<PrefabAITypes>.instance.GetAIInfo(selectAIDropDown.selectedValue);
             set { selectAIDropDown.selectedValue = value.type.FullName; }
         }
 
@@ -85,14 +88,14 @@ namespace PrefabAIChanger
         public override void Start()
         {
             base.Start();
-            propPanel = parent.parent;
+            propPanel = parent.parent.parent;
 
             width = 393;
             height = 26;
 
-            //	so let's steal from one of the appropriate style. 
+            //	so let's steal from one of the appropriate style.
             dropdownButtonAtlas =
-                propPanel.Find<UIPanel>("Size").Find<UIDropDown>("CellWidth").Find<UIButton>("Button").atlas;
+                propPanel.Find<UIDropDown>("Value").Find<UIButton>("Button").atlas;
 
             var label = AddUIComponent<Label>();
             label.position = new Vector3(10, 0);
@@ -102,15 +105,34 @@ namespace PrefabAIChanger
             selectAIDropDown = AddUIComponent<DropDown>();
             selectAIDropDown.listScrollbar = propPanel.Find<UIScrollbar>("Scrollbar");
 
-            // Add AI options to dropdown
-            foreach (var aiInfo in Singleton<PrefabAITypes>.instance.All())
+            List<PrefabAIInfo> loadedTypes;
+            try
             {
+                loadedTypes = Singleton<PrefabAITypes>.instance.All();
+            }
+            catch (TypeLoadException e)
+            {
+                Debug.LogException(e);
+                Debug.Log(e.Message);
+                Debug.Log(e.TypeName);
+                Debug.Log(e.Source);
+                Debug.LogException(e.InnerException);
+                return;
+            }
+
+            Debug.Log("add AI options");
+            // Add AI options to dropdown
+            foreach (var aiInfo in loadedTypes)
+            {
+                Debug.Log(aiInfo);
                 selectAIDropDown.AddItem(aiInfo.type.FullName);
             }
+
+            Debug.Log(prefabInfo.GetAI());
             selectAIDropDown.selectedValue = prefabInfo.GetAI().GetType().FullName;
 
             // Events
-            applyButton.eventClick += delegate (UIComponent component, UIMouseEventParameter param)
+            applyButton.eventClick += delegate(UIComponent component, UIMouseEventParameter param)
             {
                 eventApplyAIClick?.Invoke(this, param);
             };
@@ -231,7 +253,7 @@ namespace PrefabAIChanger
                 m_TextFieldPadding = new RectOffset(7, 0, 1, 0);
                 disabledBgSprite = "SubBarButtonBaseDisabled";
                 listBackground = "InfoDisplay";
-                listWidth = (int)width;
+                listWidth = (int) width;
                 listHeight = 400;
                 listPosition = PopupListPosition.Above;
                 popupColor = new Color32(255, 255, 255, 255);

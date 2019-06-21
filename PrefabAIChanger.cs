@@ -33,19 +33,9 @@ namespace PrefabAIChanger
     /// </summary>
     public class PrefabAIChanger : IUserMod
     {
-        public string Name
-        {
-            get { return "Asset Prefab AI Changer"; }
-        }
+        public string Name => "Asset Prefab AI Changer";
 
-        public string Description
-        {
-            get
-            {
-                return
-                    "Allows you to change the Prefab AI in the Asset Editor. incl building, vehicle, citizen, net etc.";
-            }
-        }
+        public string Description => "Allows you to change the Prefab AI in the Asset Editor. incl building, vehicle, citizen, net etc.";
     }
 
     /// <summary>
