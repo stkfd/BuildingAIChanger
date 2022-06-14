@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.UI;
@@ -95,7 +96,9 @@ namespace PrefabAIChanger
 
             //	so let's steal from one of the appropriate style.
             dropdownButtonAtlas =
-                propPanel.Find<UIDropDown>("Value").Find<UIButton>("Button").atlas;
+                propPanel.GetComponentsInChildren<UIDropDown>(includeInactive: true)
+                    .First()
+                        .Find<UIButton>("Button").atlas;
 
             var label = AddUIComponent<Label>();
             label.position = new Vector3(10, 0);
